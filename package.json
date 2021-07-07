@@ -4,7 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently -k npm:dev:*",
+    "dev:libraries": "cd libraries && PORT=3000 node -r newrelic index",
+    "dev:books": "cd books && PORT=3001 node -r newrelic index",
+    "dev:magazines": "cd magazines && PORT=3002 node -r newrelic index",
+    "dev:gateway": "wait-on tcp:3000 tcp:3001 tcp:3002 && PORT=4000 node -r newrelic index",
+    "install:books": "cd books && npm install",
+    "install:libraries": "cd libraries && npm install",
+    "install:magazines": "cd magazines && npm install",
+    "postinstall": "concurrently npm:install:*"
   },
   "author": "",
   "license": "ISC",
@@ -13,7 +21,9 @@
     "@apollo/gateway": "^0.30.0",
     "@newrelic/apollo-server-plugin": "^0.2.0",
     "apollo-server": "^2.25.2",
+    "concurrently": "^6.2.0",
     "graphql": "^15.5.1",
-    "newrelic": "^7.5.1"
+    "newrelic": "^7.5.1",
+    "wait-on": "^6.0.0"
   }
 }

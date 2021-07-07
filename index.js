@@ -2,31 +2,20 @@
 
 const nrPlugin = require('@newrelic/apollo-server-plugin')
 
-const { ApolloServer, gql } = require('apollo-server')
-const { buildFederatedSchema } = require('@apollo/federation')
+const { ApolloServer } = require('apollo-server')
 const { ApolloGateway } = require("@apollo/gateway")
 
-const data = require('./data-definitions')
-
-async function loadServers() {
-  const libraryService = await loadLibraries()
-  const bookService = await loadBooks()
-  const magazineService = await loadMagazines()
-
-  await loadGateway(libraryService, bookService, magazineService)
-}
-
-loadServers().catch((err) => {
+loadGateway().catch((err) => {
   console.error(err)
   process.exit(1)
 })
 
-async function loadGateway(libraryService, bookService, magazineService) {
+async function loadGateway() {
   const gateway = new ApolloGateway({
     serviceList: [
-      libraryService,
-      bookService,
-      magazineService
+      { name: 'libraries', url: 'http://localhost:3000'},
+      { name: 'books', url: 'http://localhost:3001'},
+      { name: 'magazines', url: 'http://localhost:3002'},
     ]
   });
 
@@ -36,34 +25,8 @@ async function loadGateway(libraryService, bookService, magazineService) {
     plugins: [ nrPlugin ]
   });
 
-  const { url } = await server.listen({ port: 0 })
+  const { url } = await server.listen({ port: process.env.PORT || 0 })
 
   console.log(`Gateway ready at ${url}`);
 }
 
-async function loadLibraries() {
-  const { name, typeDefs, resolvers } = data.getLibraryConfiguration(gql)
-  return await loadServer(name, typeDefs, resolvers)
-}
-
-async function loadBooks() {
-  const { name, typeDefs, resolvers } = data.getBookConfiguration(gql)
-  return await loadServer(name, typeDefs, resolvers)
-}
-
-async function loadMagazines() {
-  const { name, typeDefs, resolvers } = data.getMagazineConfiguration(gql)
-  return await loadServer(name, typeDefs, resolvers)
-}
-
-async function loadServer(name, typeDefs, resolvers) {
-  const server = new ApolloServer({
-    schema: buildFederatedSchema([{ typeDefs, resolvers }]),
-    plugins: [ nrPlugin ]
-  });
-
-  const { url } = await server.listen({ port: 0 })
-  console.log(`${name} service ready at ${url}`);
-
-  return { name, url}
-}

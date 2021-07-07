@@ -9,8 +9,8 @@ A single data graph is a central, cost-effective, accessible GraphQL server.  It
 
 
 ## New Relic Support
- * [Distributed Trace Example](https://staging-one.newrelic.com/-/0M8jqNq4vQl)
- * [Transaction Traces](https://staging-one.newrelic.com/-/0GbRmvY8rjy)
+ * [Distributed Trace Example](https://staging-one.newrelic.com/-/0znQxNm43RV)
+ * [Transaction Traces](https://staging-one.newrelic.com/-/0bEjOyambw6): Drill through all the subgraph apps
 
 
 There is no special instrumentation to support a Federated GraphQL schema.  Users must ensure every subgraph and the gateway has loaded the [New Relic Apollo Server Plugin](https://github.com/newrelic/newrelic-node-apollo-server-plugin).  There were enhancements made to the plugin to allow for a consistent experience between a single GraphQL and Federated GraphQL server.
@@ -20,7 +20,7 @@ There is no special instrumentation to support a Federated GraphQL schema.  User
  * [Proper Distributed Trace Segment Nesting](https://github.com/newrelic/newrelic-node-apollo-server-plugin/pull/95)
  * [Prevent Crashes for Queries that contain InlineFragment types](https://github.com/newrelic/newrelic-node-apollo-server-plugin/pull/100)
 
- We did try adding a RemoteGraphQLDataSource to the gateway but there wasn't anything we couldn't gain from the individual subgraph or gateway server.  Here is an example repo that shows implementing a [RemoteGraphQLDataSource](https://github.com/bizob2828/basic-apollo-federation-demo)
+ We did try adding a RemoteGraphQLDataSource to the gateway but the only value came from when you did or could not instrument the Federated sub graphs.  It added spans for the subgraph requests and added the queries being executed on the subgraphs.  If this becomes a requested feature we could ship enhancements to allow to plugin the RemoteGraphQLDataSource.  But for Federated sub graphs that were instrumented with the New Relic Apollo Plugin there wasn't any valuable gains.  Here is an example repo that shows implementing a [RemoteGraphQLDataSource](https://github.com/bizob2828/basic-apollo-federation-demo)
 
  ## Features
   * Transaction traces for Gateway query and every subgraph request
@@ -32,9 +32,9 @@ There is no special instrumentation to support a Federated GraphQL schema.  User
 
 ## Setup
 ```sh
-npm ci
-node -r newrelic index.js
-curl --location --request POST 'http://localhost:62882/' \
+npm install
+FEDERATED_APP=federated-demo NR_LICENSE=<license key> npm run dev
+curl --location --request POST 'http://localhost:4000/' \
 --header 'Content-Type: application/json' \
 --data-raw '{"query":"query BooksByBranch {\n    libraries {\n          branch\n          booksInStock {\n            isbn,\n            title,\n            author\n          }\n          magazinesInStock {\n            issue,\n            title\n          }\n        }\n}","variables":{}}'
 

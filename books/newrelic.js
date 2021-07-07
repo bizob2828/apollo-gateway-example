@@ -9,7 +9,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: [`${process.env.FEDERATED_APP}-gateway`],
+  app_name: [`${process.env.FEDERATED_APP}-books`],
   host: 'staging-collector.newrelic.com',
   license_key: process.env.NR_LICENSE,
   logging: {
